@@ -38,7 +38,7 @@ public class Driver : MonoBehaviour
 
 
         slowSpeed = movespeed * slowSpeedRatio;
-        boostSpeed = movespeed * boostSpeedRatio; 
+        boostSpeed = movespeed * boostSpeedRatio;
     }
     void SayHello(string name)
     {
