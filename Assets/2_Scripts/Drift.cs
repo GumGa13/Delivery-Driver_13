@@ -8,8 +8,13 @@ public class Drift : MonoBehaviour
     [SerializeField] float maxSpeed = 10f;       //ÃÖ´ë ¼Óµµ Á¦ÇÑ
     [SerializeField] float driftFactor = 0.95f;  //³·À»¼ö·Ï ´õ ¹Ì²ô·¯Áü
 
+    [SerializeField] float slowAccelerationRatio = 0.5f;
+    [SerializeField] float boostAccelerationRatio = 1.5f;
+
     [SerializeField] ParticleSystem smokeLeft;
     [SerializeField] ParticleSystem smokeRight;
+    [SerializeField] TrailRenderer LeftTrail;
+    [SerializeField] TrailRenderer RightTrail;
 
     Rigidbody2D rb;
     AudioSource audioSource;
@@ -18,6 +23,10 @@ public class Drift : MonoBehaviour
       {
         rb = GetComponent<Rigidbody2D>();
         audioSource = rb.GetComponent<AudioSource>();
+
+        defaultAcceleration = accleration;
+        slowAccelerationRatio = accleration * slowAccelerationRatio;
+        boostAccelerationRatio = accleration * boostAccelerationRatio;
       }
 
      void FixedUpdate()
@@ -56,5 +65,14 @@ public class Drift : MonoBehaviour
             if (!smokeLeft.isPlaying) smokeLeft.Stop();
             if (!smokeRight.isPlaying) smokeRight.Stop();
         }
+
+        LeftTrail.emitting = isDrifting;
+        RightTrail.emitting = isDrifting;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        accleration = boostAcceleration;
+
     }
 }
