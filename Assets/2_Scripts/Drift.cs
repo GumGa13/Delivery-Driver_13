@@ -3,34 +3,29 @@ using UnityEngine.Audio;
 
 public class Drift : MonoBehaviour
 {
-    [SerializeField] float accleration = 20f;    //전진, 후진 가속도
-    [SerializeField] float steering = 3f;        //조항 속도
-    [SerializeField] float maxSpeed = 10f;       //최대 속도 제한
-    [SerializeField] float driftFactor = 0.95f;  //낮을수록 더 미끄러짐
+    [SerializeField] public float accleration = 20f;    //전진, 후진 가속도
+    [SerializeField] public float steering = 3f;        //조항 속도
+    [SerializeField] public float maxSpeed = 10f;       //최대 속도 제한
+    [SerializeField] public float driftFactor = 0.95f;  //낮을수록 더 미끄러짐
 
-    [SerializeField] float slowAccelerationRatio = 0.5f;
-    [SerializeField] float boostAccelerationRatio = 1.5f;
+    public float driftThreshold = 1.5f;
 
-    [SerializeField] ParticleSystem smokeLeft;
-    [SerializeField] ParticleSystem smokeRight;
-    [SerializeField] TrailRenderer LeftTrail;
-    [SerializeField] TrailRenderer RightTrail;
+    public ParticleSystem smokeLeft;
+    public ParticleSystem smokeRight;
+    public TrailRenderer LeftTrail;
+    public TrailRenderer RightTrail;
 
-    Rigidbody2D rb;
-    AudioSource audioSource;
+    private Rigidbody2D rb;
+    private AudioSource audioSource;
 
-      void Start()
-      {
-        rb = GetComponent<Rigidbody2D>();
-        audioSource = rb.GetComponent<AudioSource>();
-
-        defaultAcceleration = accleration;
-        slowAccelerationRatio = accleration * slowAccelerationRatio;
-        boostAccelerationRatio = accleration * boostAccelerationRatio;
-      }
-
-     void FixedUpdate()
+     void Start()
      {
+       rb = GetComponent<Rigidbody2D>();
+       audioSource = GetComponent<AudioSource>();
+     }
+
+    void FixedUpdate()
+    {
         float speed = Vector2.Dot(rb.linearVelocity, transform.up);
         if (speed < maxSpeed)
         {
@@ -41,18 +36,23 @@ public class Drift : MonoBehaviour
         float turnAmount = Input.GetAxis("Horizontal") * steering * Mathf.Clamp(speed / maxSpeed, 0.4f, 1f);
         rb.MoveRotation(rb.rotation - turnAmount);
 
-        //Drift
+        ApplyDrift();
+    }
+
+    void ApplyDrift()
+    {
         Vector2 forwardVelocity = transform.up * Vector2.Dot(rb.linearVelocity, transform.up);
         Vector2 sideVelocity = transform.right * Vector2.Dot(rb.linearVelocity, transform.right);
 
         rb.linearVelocity = forwardVelocity + (sideVelocity * driftFactor);
-     }
 
-    private void Update()
+    }
+
+    void Update()
     {
         float sidewayVelocity = Vector2.Dot(rb.linearVelocity, transform.right);
 
-        bool isDrifting = rb.linearVelocity.magnitude > 2f && Mathf.Abs(sidewayVelocity) > 1f;
+        bool isDrifting = Mathf.Abs(sidewayVelocity) > driftThreshold && rb.linearVelocity.magnitude > 2f;
         if (isDrifting)
         {
             if (!audioSource.isPlaying) audioSource.Play();
@@ -66,13 +66,8 @@ public class Drift : MonoBehaviour
             if (!smokeRight.isPlaying) smokeRight.Stop();
         }
 
+        audioSource.volume = Mathf.Lerp(audioSource.volume, isDrifting ? 1f : 0f, Time.deltaTime * 5f);
         LeftTrail.emitting = isDrifting;
         RightTrail.emitting = isDrifting;
-    }
-
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        accleration = boostAcceleration;
-
     }
 }
