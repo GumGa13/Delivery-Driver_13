@@ -2546,7 +2546,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turnspeed: 150
-  movespeed: 25
+  movespeed: 15
   slowSpeedRatio: 0.5
   boostSpeedRatio: 1.5
 --- !u!61 &193618334
@@ -2639,10 +2639,10 @@ MonoBehaviour:
   maxSpeed: 10
   driftFactor: 0.95
   driftThreshold: 1.5
-  smokeLeft: {fileID: 0}
-  smokeRight: {fileID: 0}
-  LeftTrail: {fileID: 0}
-  RightTrail: {fileID: 0}
+  smokeLeft: {fileID: 598187586}
+  smokeRight: {fileID: 1976431736}
+  LeftTrail: {fileID: 598187584}
+  RightTrail: {fileID: 1976431734}
 --- !u!199 &193618337
 ParticleSystemRenderer:
   serializedVersion: 6
@@ -14711,7 +14711,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 20
+  orthographic size: 30
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

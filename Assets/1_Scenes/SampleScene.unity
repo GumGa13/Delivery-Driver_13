@@ -8185,8 +8185,9 @@ MonoBehaviour:
   steering: 3
   maxSpeed: 10
   driftFactor: 0.95
-  smokeLeft: {fileID: 644030021}
-  smokeRight: {fileID: 644030021}
+  driftThreshold: 1.5
+  smokeLeft: {fileID: 2126421359}
+  smokeRight: {fileID: 130261169}
   LeftTrail: {fileID: 2126421357}
   RightTrail: {fileID: 130261167}
 --- !u!199 &644030019
