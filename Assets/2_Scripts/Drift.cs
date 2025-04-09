@@ -1,12 +1,11 @@
 using UnityEngine;
-using UnityEngine.Audio;
 
 public class Drift : MonoBehaviour
 {
-    [SerializeField] public float accleration = 20f;    //¿¸¡¯, »ƒ¡¯ ∞°º”µµ
-    [SerializeField] public float steering = 3f;        //¡∂«◊ º”µµ
-    [SerializeField] public float maxSpeed = 10f;       //√÷¥Î º”µµ ¡¶«—
-    [SerializeField] public float driftFactor = 0.95f;  //≥∑¿ªºˆ∑œ ¥ı πÃ≤Ù∑Ø¡¸
+    [SerializeField] public float accleration = 20f;    
+    [SerializeField] public float steering = 3f;        
+    [SerializeField] public float maxSpeed = 10f;       
+    [SerializeField] public float driftFactor = 0.95f;  
 
     public float driftThreshold = 1.5f;
 
@@ -16,16 +15,31 @@ public class Drift : MonoBehaviour
     public TrailRenderer RightTrail;
 
     private Rigidbody2D rb;
-    private AudioSource audioSource;
+    [SerializeField] public AudioSource driftAudioSource;
+    [SerializeField] public AudioSource offRoadAudioSource;
 
-     void Start()
-     {
+    [SerializeField] private RoadChecker roadChecker;
+
+    void Start()
+    {
        rb = GetComponent<Rigidbody2D>();
-       audioSource = GetComponent<AudioSource>();
-     }
+       roadChecker = GetComponent<RoadChecker>();
+
+        if (driftAudioSource == null || offRoadAudioSource == null)
+       {
+           AudioSource[] sources = GetComponents<AudioSource>();
+           if (sources.Length > 1)
+           {
+               driftAudioSource = sources[0];
+               offRoadAudioSource = sources[1];
+           }
+       }
+    }
 
     void FixedUpdate()
     {
+        if (roadChecker != null && !roadChecker.isOnRoad) return; //ÎèÑÎ°ú ÏúÑÍ∞Ä ÏïÑÎãàÎ©¥ Ï°∞Ïûë ÏïàÎê®.
+
         float speed = Vector2.Dot(rb.linearVelocity, transform.up);
         if (speed < maxSpeed)
         {
@@ -51,23 +65,49 @@ public class Drift : MonoBehaviour
     void Update()
     {
         float sidewayVelocity = Vector2.Dot(rb.linearVelocity, transform.right);
-
+        float forwardVelocity = Vector2.Dot(rb.linearVelocity, transform.up);
         bool isDrifting = Mathf.Abs(sidewayVelocity) > driftThreshold && rb.linearVelocity.magnitude > 2f;
+        bool isOffRoad = roadChecker != null && !roadChecker.isOnRoad;
+
         if (isDrifting)
         {
-            if (!audioSource.isPlaying) audioSource.Play();
             if (!smokeLeft.isPlaying) smokeLeft.Play();
             if (!smokeRight.isPlaying) smokeRight.Play();
+
+            float angle = Mathf.Atan2(rb.linearVelocity.y, rb.linearVelocity.x) * Mathf.Rad2Deg;
+
+            var leftMain = smokeLeft.main;
+            var rightMain = smokeRight.main;
+
+            leftMain.startRotation = (angle + 180f) * Mathf.Deg2Rad;
+            rightMain.startRotation = (angle + 180f) * Mathf.Deg2Rad;
+            LeftTrail.emitting = true;
+            RightTrail.emitting = true;
         }
         else
         {
-            if (!audioSource.isPlaying) audioSource.Stop();
-            if (!smokeLeft.isPlaying) smokeLeft.Stop();
-            if (!smokeRight.isPlaying) smokeRight.Stop();
+            if (smokeLeft.isPlaying) smokeLeft.Stop();
+            if (smokeRight.isPlaying) smokeRight.Stop();
+            LeftTrail.emitting = false;
+            RightTrail.emitting = false;
         }
 
-        audioSource.volume = Mathf.Lerp(audioSource.volume, isDrifting ? 1f : 0f, Time.deltaTime * 5f);
-        LeftTrail.emitting = isDrifting;
-        RightTrail.emitting = isDrifting;
+        if (isDrifting)
+        {
+            if (!driftAudioSource.isPlaying) driftAudioSource.Play();
+        }
+        else
+        {
+            if (driftAudioSource.isPlaying) driftAudioSource.Stop();
+        }
+
+        if (isOffRoad)
+        {
+            if (!offRoadAudioSource.isPlaying) offRoadAudioSource.Play();
+        }
+        else
+        {
+            if (offRoadAudioSource.isPlaying) offRoadAudioSource.Stop();
+        }
     }
 }

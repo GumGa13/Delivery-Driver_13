@@ -7,6 +7,7 @@ TagManager:
   - Chicken
   - Customer
   - Boost
+  - Road
   layers:
   - Default
   - TransparentFX
