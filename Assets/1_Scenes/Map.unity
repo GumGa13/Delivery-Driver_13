@@ -4992,7 +4992,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3921e684528005f4391b2f13417d33a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  turnspeed: 150
+  turnspeed: 200
   movespeed: 15
   slowSpeedRatio: 0.5
   boostSpeedRatio: 1.5
@@ -5218,7 +5218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   destroyDelay: 1
   noChickenColor: {r: 1, g: 1, b: 1, a: 1}
-  hasChickenColor: {r: 0.9, g: 0.5, b: 0, a: 1}
+  hasChickenColor: {r: 0.87323624, g: 0.9019608, b: 0, a: 1}
 --- !u!82 &193618342
 AudioSource:
   m_ObjectHideFlags: 0
@@ -15649,7 +15649,7 @@ AudioSource:
   m_audioClip: {fileID: 8300000, guid: 17d89c9cfb42ef4459e348c27615b069, type: 3}
   m_Resource: {fileID: 8300000, guid: 17d89c9cfb42ef4459e348c27615b069, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.5
+  m_Volume: 0.3
   m_Pitch: 1
   Loop: 1
   Mute: 0

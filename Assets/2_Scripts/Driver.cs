@@ -6,32 +6,34 @@ using System.Collections;
 
 public class Driver : MonoBehaviour
 {
-    [Header("È¸Àü")]
-    [SerializeField] float turnspeed = 1f;
+    [Header("íšŒì „")]
+    [SerializeField] float turnspeed = 200f;
 
-    [Header("¼Óµµ")]
-    [SerializeField] float movespeed = 15f;  // ±âº» ÁÖÇà ¼Óµµ
+    [Header("ì†ë„")]
+    [SerializeField] float movespeed = 15f;  // ê¸°ë³¸ ì£¼í–‰ ì†ë„
+    private float currentSpeed;
 
-    [Header("´À¸®°Ô")]
+    [Header("ëŠë¦¬ê²Œ")]
     [SerializeField] float slowSpeedRatio = 0.5f;
     float slowSpeed;
 
-    [Header("ºü¸£°Ô")]
+    [Header("ë¹ ë¥´ê²Œ")]
     [SerializeField] float boostSpeedRatio = 1.5f;
     float boostSpeed;
 
     [Header("UI")]
     [SerializeField] private TextMeshProUGUI speedChangeText;
-    [SerializeField] private TextMeshProUGUI dashHintText; // µ¹Áø ÈùÆ®¿ë ÅØ½ºÆ®
+    [SerializeField] private TextMeshProUGUI dashHintText;
     private Coroutine speedTextCoroutine;
 
-    private bool canDash = false; // µ¹Áø °¡´É ¿©ºÎ
-    private float dashSpeed = 30f;  // µ¹Áø ¼Óµµ (±âº» ÁÖÇà ¼Óµµº¸´Ù ºü¸£°Ô ¼³Á¤)
-    private float dashDuration = 0.5f; // µ¹Áø Áö¼Ó ½Ã°£
+    private bool canDash = false;
+    private float dashSpeed = 45f;
+    private float dashDuration = 0.5f;
     private bool isDashing = false;
 
     void Start()
     {
+        currentSpeed = movespeed;
         slowSpeed = movespeed * slowSpeedRatio;
         boostSpeed = movespeed * boostSpeedRatio;
 
@@ -41,8 +43,7 @@ public class Driver : MonoBehaviour
 
     void Update()
     {
-        // ÀÌµ¿
-        float moveAmount = Input.GetAxis("Vertical") * movespeed * Time.deltaTime;
+        float moveAmount = Input.GetAxis("Vertical") * currentSpeed * Time.deltaTime;
         float turnAmount = Input.GetAxis("Horizontal") * turnspeed * Time.deltaTime;
 
         transform.Rotate(0, 0, -turnAmount);
@@ -50,10 +51,9 @@ public class Driver : MonoBehaviour
         if (!isDashing)
             transform.Translate(0, moveAmount, 0);
 
-        // µ¹Áø ½Ãµµ
         if (canDash && Input.GetKeyDown(KeyCode.Space))
         {
-            Debug.Log("Space pressed, attempting dash.");
+            Debug.Log("ìŠ¤í˜ì´ìŠ¤ ë°” ëˆ„ë¦„.");
             StartCoroutine(Dash());
         }
     }
@@ -62,15 +62,13 @@ public class Driver : MonoBehaviour
     {
         if (other.CompareTag("Boost"))
         {
-            if (!canDash)
+            canDash = true;
+            Debug.Log("ë¶€ìŠ¤íŠ¸ íšë“! ëŒì§„ ê°€ëŠ¥ : " + canDash);
+
+            if (dashHintText != null)
             {
-                canDash = true;
-                Debug.Log("Boost item collected! canDash set to: " + canDash);
-                if (dashHintText != null)
-                {
-                    dashHintText.text = "Press!" + "[Space Bar]";
-                }
-                dashHintText?.gameObject.SetActive(true);
+                dashHintText.text = "Press! [Space Bar]";
+                dashHintText.gameObject.SetActive(true);
             }
 
             StartCoroutine(RemoveBoostObjectAfterDelay(other.gameObject));
@@ -81,59 +79,57 @@ public class Driver : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
         Destroy(boostObject);
-        Debug.Log("Boost item destroyed.");
+        Debug.Log("ë¶€ìŠ¤íŠ¸ ì•„ì´í…œ ì‚­ì œ.");
     }
 
     IEnumerator Dash()
     {
-        Debug.Log("Dash started!");
-
+        Debug.Log("ëŒì§„!!!");
         isDashing = true;
-        canDash = false; // µ¹Áø ÈÄ ´Ù½Ã µ¹ÁøÇÒ ¼ö ¾øµµ·Ï ¼³Á¤
+        canDash = false;
+        dashHintText?.gameObject.SetActive(false);
 
-        dashHintText?.gameObject.SetActive(false); // µ¹Áø ÈÄ ¾È³» ÅØ½ºÆ® ¼û±è
+        float prevSpeed = currentSpeed;
+        currentSpeed = dashSpeed;
 
-        Debug.Log("Dash speed set to: " + dashSpeed);
+        ShowSpeedChange(currentSpeed - prevSpeed); // ì†ë„ ì¦ê°€ í…ìŠ¤íŠ¸ í‘œì‹œ
 
+        Vector3 dashDirection = transform.up;
         float elapsed = 0f;
-        Vector3 dashDirection = transform.up; // ÇöÀç ¹Ù¶óº¸´Â ¹æÇâÀ¸·Î µ¹Áø
 
-        // 0.5ÃÊ µ¿¾È °è¼Ó ÀÌµ¿
         while (elapsed < dashDuration)
         {
-            // µ¹Áø ¼Óµµ Àû¿ë, ÀÌµ¿ ¹æÇâÀº transform.upÀ» »ç¿ë
             transform.Translate(dashDirection * dashSpeed * Time.deltaTime, Space.World);
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        // µ¹Áø ÈÄ ±âº» ¼ÓµµÀÎ movespeed·Î º¹¿ø
+        currentSpeed = movespeed;
         isDashing = false;
-        Debug.Log("Dash ended.");
+        Debug.Log("ëŒì§„ ì¤‘ì§€.");
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        float prevSpeed = movespeed;
-        movespeed = slowSpeed;  // Ãæµ¹ ½Ã ¼Óµµ °¨¼Ò
-        float delta = movespeed - prevSpeed;
+        float prevSpeed = currentSpeed;
+        currentSpeed = slowSpeed;
+        float delta = currentSpeed - prevSpeed;
         ShowSpeedChange(delta);
     }
 
     void ShowSpeedChange(float delta)
     {
+        if (Mathf.Approximately(delta, 0f))
+            return;
+
         if (speedTextCoroutine != null)
             StopCoroutine(speedTextCoroutine);
+
         speedTextCoroutine = StartCoroutine(DisplaySpeedChange(delta));
     }
 
     IEnumerator DisplaySpeedChange(float delta)
     {
-        if (Mathf.Approximately(delta, 0f))
-        {
-            yield break;
-        }
-
         speedChangeText.text = $"Speed!  {(delta > 0 ? "+" : "")}{delta:F2}";
         speedChangeText.color = delta > 0 ? Color.green : Color.red;
         speedChangeText.gameObject.SetActive(true);
